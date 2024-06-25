@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -10,7 +11,6 @@ public class PlayerController : MonoBehaviour
     private Vector2 _moveVector2;
     private float _speed;
     private bool _isGrounded;
-    private bool _isControl;
     private bool _notObstacle;
 
     private void Awake()
@@ -49,7 +49,10 @@ public class PlayerController : MonoBehaviour
             _isGrounded = false;
             _rb.AddForce(transform.up * jumpForce * Time.fixedDeltaTime, ForceMode.Impulse);
 
-            if (_playerAnimator.GetBool("isJump") == false)
+            if (_playerAnimator.GetBool("isControl") == false)
+                _playerAnimator.Play("JumpAnimation");
+
+            else if (_playerAnimator.GetBool("isJump") == false)
                 _playerAnimator.SetBool("isJump", true);
         }
         else
@@ -76,6 +79,7 @@ public class PlayerController : MonoBehaviour
         {
             _notObstacle = false;
             OnDisable();
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }            
             
     }
