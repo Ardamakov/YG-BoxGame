@@ -84,12 +84,12 @@ public class PlayerController : MonoBehaviour
             
     }
 
-    private void OnEnable()
+    public void OnEnable()
     {
         _playerControls.Enable();
     }
 
-    private void OnDisable()
+    public void OnDisable()
     {
         _playerControls.Disable();
     }
