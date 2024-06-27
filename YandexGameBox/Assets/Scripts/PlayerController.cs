@@ -7,18 +7,23 @@ public class PlayerController : MonoBehaviour
 
     private PlayerControls _playerControls;
     private Rigidbody _rb;
-    private Animator _playerAnimator;
+    //private Animator _playerAnimator;
     private Vector2 _moveVector2;
+    private Vector3 _spawnDirection;
     private float _speed;
     private bool _isGrounded;
     private bool _notObstacle;
+    private int _deadPosY;
 
     private void Awake()
     {
         _playerControls = new PlayerControls();
         _rb = GetComponent<Rigidbody>();
+        //_playerAnimator = GetComponent<Animator>();
         _notObstacle = true;
-        _playerAnimator = GetComponent<Animator>();
+        _deadPosY = 250;
+        _spawnDirection = transform.position;
+        
         OnEnable();
     }
 
@@ -40,6 +45,9 @@ public class PlayerController : MonoBehaviour
         Jump();
         if (_notObstacle)
             _rb.MovePosition(transform.position + (transform.forward * _speed + transform.right * _moveVector2.x * 6) * Time.deltaTime);
+        if (transform.position.y < _deadPosY)
+            transform.position = _spawnDirection;
+
     }
 
     private void Jump()
@@ -48,23 +56,27 @@ public class PlayerController : MonoBehaviour
         {
             _isGrounded = false;
             _rb.AddForce(transform.up * jumpForce * Time.fixedDeltaTime, ForceMode.Impulse);
-
+            /*
             if (_playerAnimator.GetBool("isControl") == false)
                 _playerAnimator.Play("JumpAnimation");
 
             else if (_playerAnimator.GetBool("isJump") == false)
                 _playerAnimator.SetBool("isJump", true);
+            */
         }
-        else
-            _playerAnimator.SetBool("isJump", false);
+        //else
+            //_playerAnimator.SetBool("isJump", false);
+            
     }
 
     private void Control()
     {
+        /*
         if (_playerControls.Player.Control.IsPressed())
             _playerAnimator.SetBool("isControl", true);
         else
             _playerAnimator.SetBool("isControl", false);
+        */
     }
 
     private void OnCollisionStay(Collision collision)
@@ -82,6 +94,16 @@ public class PlayerController : MonoBehaviour
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }            
             
+    }
+
+    public void ChangeSpawnDirection(Vector3 spawn)
+    {
+        _spawnDirection = spawn;
+    }
+
+    public void ChangeDeadPosY(int i)
+    {
+        _deadPosY = i;
     }
 
     public void OnEnable()
