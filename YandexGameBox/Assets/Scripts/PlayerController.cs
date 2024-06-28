@@ -1,13 +1,14 @@
 using UnityEngine;
+using System.Collections;
 using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
+    public GameObject playerCamera;
     public int jumpForce;
 
     private PlayerControls _playerControls;
     private Rigidbody _rb;
-    //private Animator _playerAnimator;
     private Vector2 _moveVector2;
     private Vector3 _spawnDirection;
     private float _speed;
@@ -19,7 +20,6 @@ public class PlayerController : MonoBehaviour
     {
         _playerControls = new PlayerControls();
         _rb = GetComponent<Rigidbody>();
-        //_playerAnimator = GetComponent<Animator>();
         _notObstacle = true;
         _deadPosY = 250;
         _spawnDirection = transform.position;
@@ -41,44 +41,18 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {  
-        Control();
-        Jump();
         if (_notObstacle)
             _rb.MovePosition(transform.position + (transform.forward * _speed + transform.right * _moveVector2.x * 6) * Time.deltaTime);
         if (transform.position.y < _deadPosY)
             transform.position = _spawnDirection;
-
+        Control();
+        Jump();
     }
 
-    private void Jump()
+    private void LateUpdate()
     {
-        if (_isGrounded & _playerControls.Player.Jump.IsPressed())
-        {
-            _isGrounded = false;
-            _rb.AddForce(transform.up * jumpForce * Time.fixedDeltaTime, ForceMode.Impulse);
-            /*
-            if (_playerAnimator.GetBool("isControl") == false)
-                _playerAnimator.Play("JumpAnimation");
-
-            else if (_playerAnimator.GetBool("isJump") == false)
-                _playerAnimator.SetBool("isJump", true);
-            */
-        }
-        //else
-            //_playerAnimator.SetBool("isJump", false);
-            
+        playerCamera.transform.position = transform.position;
     }
-
-    private void Control()
-    {
-        /*
-        if (_playerControls.Player.Control.IsPressed())
-            _playerAnimator.SetBool("isControl", true);
-        else
-            _playerAnimator.SetBool("isControl", false);
-        */
-    }
-
     private void OnCollisionStay(Collision collision)
     {
         if (collision.gameObject.CompareTag("Ground"))
@@ -89,11 +63,41 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Obstacle"))
         {
-            _notObstacle = false;
-            OnDisable();
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            StartCoroutine(Respawn(1f));
+        }                
+    }
+    public void OnEnable()
+    {
+        _playerControls.Enable();
+    }
+
+    public void OnDisable()
+    {
+        _playerControls.Disable();
+    }
+
+    private void Jump()
+    {
+        if (_isGrounded & _playerControls.Player.Jump.IsPressed())
+        {
+            _isGrounded = false;
+            _rb.AddForce(transform.up * jumpForce * Time.fixedDeltaTime, ForceMode.Impulse);
         }            
-            
+    }
+
+    private void Control()
+    {
+
+    }
+
+    private IEnumerator Respawn(float time)
+    {
+        _notObstacle = false;
+        OnDisable();
+        yield return new WaitForSeconds(time);
+        OnEnable();
+        transform.position = _spawnDirection;
+        _notObstacle = true;
     }
 
     public void ChangeSpawnDirection(Vector3 spawn)
@@ -106,13 +110,4 @@ public class PlayerController : MonoBehaviour
         _deadPosY = i;
     }
 
-    public void OnEnable()
-    {
-        _playerControls.Enable();
-    }
-
-    public void OnDisable()
-    {
-        _playerControls.Disable();
-    }
 }
